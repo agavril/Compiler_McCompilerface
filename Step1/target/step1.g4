@@ -1,8 +1,6 @@
 grammar step1;
 // lexer
 keyword : KEYWORD;
-// fragment NUM : ('0'..'9');
-// fragment CHAR : ('a'..'z' | 'A'..'Z');
 
 INTLITERAL : [0-9]+;
 FLOATLITERAL : [0-9]*'.'[0-9]+;
