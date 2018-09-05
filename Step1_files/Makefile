@@ -8,10 +8,7 @@ compiler:
 	java -cp $(CLASSPATH) org.antlr.v4.Tool -o build $(ANTLR)
 	rm -rf classes
 	mkdir classes
-	javac -cp $(CLASSPATH) -d classes  build/*.java
-	
-clean:
-	rm -rf classes build
+	javac -cp $(CLASSPATH) -d classes -source 1.7 -target 1.7 src/*.java build/*.java
 
 team:
 	$(info Team: Compiler McCompilerface)
@@ -21,3 +18,6 @@ team:
 	$(info )
 	$(info Austin Applegate)
 	$(info aappleg)
+
+clean:
+	rm -rf classes/ build/
