@@ -9,7 +9,7 @@ FLOATLITERAL : [0-9]*'.'[0-9]+;
 STRINGLITERAL : '"'~('"')+'"';
 COMMENT : '--'~('\n')+ -> skip;
 
-IDENTIFIER : [a-zA-Z]([a-zA-Z]|[0-9]);
+IDENTIFIER : [a-zA-Z]([a-zA-Z]|[0-9])*;
 
 WS :	('\t' 
 		| '\n' 
