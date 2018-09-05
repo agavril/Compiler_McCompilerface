@@ -28,6 +28,7 @@ public class step1 {
 			}
 			
 			System.out.println("Value: " + t.getText());
+			t = lex.nextToken();
 		}
 	}
 }
