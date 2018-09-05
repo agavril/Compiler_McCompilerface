@@ -11,6 +11,9 @@ compiler:
 	javac -cp $(CLASSPATH) -d classes  build/*.java
 	java -cp $(CLASSPATH):classes/ step1 testfiles/sqrt.micro > outputs/sqrt.out
 	diff -B -b exp_outputs/sqrt.out outputs/sqrt.out
+	
+clean:
+	rm -rf classes build
 
 team:
 	$(info Team: Compiler McCompilerface)
