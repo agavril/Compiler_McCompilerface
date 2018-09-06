@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class step1 {
 	public static void main(String[] args) throws Exception {
-		ANTLRFileStream stream = new ANTLRFileStream("sqrt.micro");
+		ANTLRFileStream stream = new ANTLRFileStream(args[0]);
 		step1Lexer lex = new step1Lexer(stream);
 		Token t = lex.nextToken();
 		while(t.getType() != Token.EOF) {
