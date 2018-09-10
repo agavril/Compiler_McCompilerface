@@ -9,25 +9,25 @@ public class step1 {
 		Token t = lex.nextToken();
 		while(t.getType() != Token.EOF) {
 			if (t.getType() == step1Lexer.KEYWORD) {
-				System.out.print("KEYWORD");
+				System.out.println("Token Type: KEYWORD");
 			}
 			else if (t.getType() == step1Lexer.IDENTIFIER) {
-				System.out.print("IDENTIFIER");
+				System.out.println("Token Type: IDENTIFIER");
 			}
 			else if (t.getType() == step1Lexer.INTLITERAL) {
-				System.out.print("INTLITERAL");
+				System.out.println("Token Type: INTLITERAL");
 			}
 			else if (t.getType() == step1Lexer.FLOATLITERAL) {
-				System.out.print("FLOATLITERAL");
+				System.out.println("Token Type: FLOATLITERAL");
 			}
 			else if (t.getType() == step1Lexer.OPERATOR) {
-				System.out.print("OPERATOR");
+				System.out.println("Token Type: OPERATOR");
 			}
 			else if (t.getType() == step1Lexer.STRINGLITERAL) {
-				System.out.print("STRINGLITERAL");
+				System.out.println("Token Type: STRINGLITERAL");
 			}
 			
-			System.out.println(" (Value = \"" + t.getText() + "\")");
+			System.out.println("Value: " + t.getText());
 			t = lex.nextToken();
 		}
 	}
