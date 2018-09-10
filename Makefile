@@ -1,5 +1,3 @@
-CLASSPATH := antlr-4.7.1-complete.jar
-
 ANTLR := step1.g4
 
 compiler:
