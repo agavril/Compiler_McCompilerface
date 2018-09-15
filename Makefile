@@ -1,4 +1,4 @@
-ANTLR := step1.g4
+ANTLR := step2.g4
 
 compiler:
 	rm -rf build
