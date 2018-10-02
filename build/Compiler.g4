@@ -8,11 +8,20 @@ decl		        : string_decl decl | var_decl decl | ;
 
 
 // Global String Declaration
-string_decl       : 'STRING' id ':=' str ';';
+string_decl       : 'STRING' id ':=' str ';'{
+	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text)
+	tree.scope.add(newSymbol);
+};
 str               : STRINGLITERAL;
 
 // Variable Declaration
-var_decl          : var_type id_list ';';
+var_decl          : var_type id_list ';'{
+	ArrayList stringArray = $id_list.text.split(",");
+	for (String id : stringArray){
+		Symbol newSymbol = new Symbol(id, $var_type.text, "0");
+		tree.scope.add(newSymbol)
+	}
+};
 var_type	        : 'FLOAT' | 'INT';
 any_type          : var_type | 'VOID';
 id_list           : id id_tail;
@@ -20,12 +29,20 @@ id_tail           : ',' id id_tail | ;
 
 // Function Parameter List
 param_decl_list   : param_decl param_decl_tail | ;
-param_decl        : var_type id;
+param_decl        : var_type id{
+	Symbol newSymbol = new Symbol($id.text, $var_type.text, "0")
+	tree.scope.add(newSymbol);
+};
 param_decl_tail   : ',' param_decl param_decl_tail | ;
 
 // Function Declarations
 func_declarations : func_decl func_declarations | ;
-func_decl	  : 'FUNCTION' any_type id '(' param_decl_list ')' 'BEGIN' func_body 'END';
+func_decl	  : 'FUNCTION' any_type id{
+	tree.down($id.text, 0)	
+}
+'(' param_decl_list ')' 'BEGIN' func_body 'END'{
+	tree.up();
+};
 func_body	  : decl stmt_list;
 
 // Statement List
@@ -54,11 +71,20 @@ addop             : '+' | '-';
 mulop             : '*' | '/';
 
 // Complex Statements and Condition
-if_stmt           : 'IF' '(' cond ')' decl stmt_list else_part 'ENDIF';
-else_part         : 'ELSE' decl stmt_list | ;
+if_stmt           : 'IF'
+{tree.down("BLOCK", ++level)} 
+'(' cond ')' decl stmt_list else_part 'ENDIF'
+{tree.up()};
+else_part         : 'ELSE' 
+{tree.down("BLOCK", ++level)} 
+decl stmt_list
+{tree.up()} | ;
 cond              : expr compop expr | 'TRUE' | 'FALSE';
 compop            : '<' | '>' | '=' | '!=' | '<=' | '>=';
-while_stmt        : 'WHILE' '(' cond ')' decl stmt_list 'ENDWHILE';
+while_stmt        : 'WHILE' 
+{tree.down("BLOCK", ++level)} 
+'(' cond ')' decl stmt_list 'ENDWHILE'
+{tree.up()};
 
 
 // ECE468 ONLY
