@@ -2,7 +2,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.io.IOException;
 
-public class step2 {
+public class Compiler {
 	public static void main(String[] args) throws Exception {
 		ANTLRFileStream stream = new ANTLRFileStream(args[0]);
 		step2Lexer lex = new step2Lexer(stream);
@@ -21,8 +21,8 @@ public class step2 {
 }
 
 
-class step2ErrorStrategy extends DefaultErrorStrategy{
-	public step2ErrorStrategy(){
+class CompilerErrorStrategy extends DefaultErrorStrategy{
+	public CompilerErrorStrategy(){
 	}
 
 	@Override

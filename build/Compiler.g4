@@ -1,4 +1,4 @@
-grammar step2;
+grammar Compiler;
 
 // Program 
 program           : 'PROGRAM' id 'BEGIN' pgm_body 'END';
@@ -18,7 +18,7 @@ any_type          : var_type | 'VOID';
 id_list           : id id_tail;
 id_tail           : ',' id id_tail | ;
 
-// Function Paramater List
+// Function Parameter List
 param_decl_list   : param_decl param_decl_tail | ;
 param_decl        : var_type id;
 param_decl_tail   : ',' param_decl param_decl_tail | ;
