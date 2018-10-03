@@ -9,7 +9,7 @@ decl		        : string_decl decl | var_decl decl | ;
 
 // Global String Declaration
 string_decl       : 'STRING' id ':=' str ';'{
-	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text)
+	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text);
 	tree.scope.add(newSymbol);
 };
 str               : STRINGLITERAL;
