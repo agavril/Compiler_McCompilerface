@@ -1,4 +1,4 @@
-ANTLR := Compiler.g4
+ANTLR := Micro.g4
 
 compiler:
 	rm -rf build

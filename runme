@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp classes/:${CLASSPATH}:classes/ Compiler "$1" > "$2"
+java -cp classes/:${CLASSPATH}:classes/ Micro "$1" > "$2"

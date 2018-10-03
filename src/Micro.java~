@@ -45,7 +45,7 @@ class Symbol{
 
 	public void print (){
 		if (this.type == "STRING") {
-			System.out.println("name " + this.id + " type " + this.type + " value " + this.value);
+			System.out.println("name " + this.id + " type " + this.type + " value \"" + this.value + "\"");
 		}
 		else {
 			System.out.println("name " + this.id + " type " + this.type);
