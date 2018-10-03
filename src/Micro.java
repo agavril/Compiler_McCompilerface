@@ -69,7 +69,7 @@ class Table{
 
 	public void add(Symbol s){ // add symbol
 		for (Symbol y : symbol_list){ // check if symbol already exists in this scope
-			if (s.name.equals(y.name) {
+		    if (s.name.equals(y.name)){
 				this.duplicates.add(s);
 				break; // break is necessary so each duplicate is only added once
 			}
