@@ -92,8 +92,8 @@ class Table{
 	}
 
 	public void print() {
-		if (this.level == 0 | this.level == 1) { // print top level scopes (global, functions)
-			System.out.println("Symbol table " + this.name);
+		if (this.level == 0) { // print top level scopes (global, functions)
+		    System.out.println("Symbol table " + this.name);
 		}
 		else { // print nested blocks as "BLOCK #"
 			System.out.println("Symbol table BLOCK " + this.level);
