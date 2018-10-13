@@ -10,7 +10,7 @@ public class AC{
 class ACList extends LinkedList{
     public ACList(){};
     
-    public void print(){
+    public void print(){    //Go through every node and run its print
       	ListIterator<ACNode> li = this.listIterator();
 	while(li.hasNext()){
 	    li.next().print();
@@ -81,11 +81,11 @@ class ACNode{
 	return newList;
     }
     
-    public String varToReg(String var){
+    public String varToReg(String var){      //Convert the variable number to a register number
 	if(var == null){return null;}
 	String result;
 	if(var.startsWith("!")){
-	    result = "r" + (Integer.parseInt(var.substring(1,var.length()-1))-1);
+	    result = "r" + (Integer.parseInt(var.substring(1,var.length()-1))-1);   //Find the number and subtract 1
 	    return result;
 	}
 	else{return var;}
@@ -102,7 +102,7 @@ class ACNode{
 class TinyList extends LinkedList{
     public TinyList(){};
     
-    public void print(){
+    public void print(){       //Go through every node and run its print
 	System.out.println(";IR code");
 	ListIterator<TinyNode> li = this.listIterator();
 	while(li.hasNext()){
@@ -114,8 +114,7 @@ class TinyList extends LinkedList{
 class TinyNode{
     public String opname;
     public String op1;
-    public String op2;
-    
+    public String op2;  
     public TinyNode(String opname, String op1, String op2){
 	this.opname = opname;
 	this.op1 = op1;
