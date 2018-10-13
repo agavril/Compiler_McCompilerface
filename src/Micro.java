@@ -28,8 +28,9 @@ public class Micro {
 	ListIterator<ACNode> liAC = newACList.listIterator();
 	while(liAC.hasNext()){
 	    newTinyList.addAll(liAC.next().ACToTiny());
+	    newTinyList.print();
+	    System.out.println("---------------");
 	}
-	newTinyList.print();
     }
 }
 

@@ -11,6 +11,7 @@ class ACList extends LinkedList{
     public ACList(){};
     
     public void print(){    //Go through every node and run its print
+	System.out.println(";IRCode");
       	ListIterator<ACNode> li = this.listIterator();
 	while(li.hasNext()){
 	    li.next().print();
@@ -31,8 +32,7 @@ class ACNode{
 	}
     
     public TinyList ACToTiny(){		//Converts an ACNode to a list of TinyNodes
-	System.out.println("ACToTinyCall");
-	System.out.println(opname);
+	System.out.println("ACToTinyCall" + opname);
 	TinyList newList = new TinyList();
 	String tinyOp1 = varToReg(op1);
 	String tinyOp2 = varToReg(op2);
@@ -77,8 +77,8 @@ class ACNode{
 	case("WRITES"):
 	    newList.addLast(new TinyNode("sys writef", tinyDest, null));
 	default:
-	    System.out.println("Not a valid IR");
-	    newList = null;
+	    //System.out.println("Not a valid IR");
+	    //newList = null;
 	}		
 	return newList;
     }
@@ -106,7 +106,6 @@ class TinyList extends LinkedList{
     public TinyList(){};
     
     public void print(){       //Go through every node and run its print
-	System.out.println(";IR code");
 	ListIterator<TinyNode> li = this.listIterator();
 	while(li.hasNext()){
 	    li.next().print();
