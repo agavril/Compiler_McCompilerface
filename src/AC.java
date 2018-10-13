@@ -9,6 +9,10 @@ public class AC{
 
 class ACList extends LinkedList{
 	public ACList(){}
+	
+	ListIterator<ACNode> li = this.listIterator();
+	while(li.hasNext())
+		li.next().print();
 }
 
 class ACNode{
@@ -18,17 +22,20 @@ class ACNode{
 	public String dest;	
 	public ACNode(String opname, String op1, String op2, String dest){
 		this.opname = opname;
-		this.src1 = op1;
-		this.src2 = op2;
+		this.op1 = op1;
+		this.op2 = op2;
 		this.dest = dest;
 	}
 	
-	public TinyList ACToTiny(){		//Converts an ACNode to a TinyNode
+	public TinyList ACToTiny(){		//Converts an ACNode to a list of TinyNodes
 		TinyList newList = new TinyList();
 		String tinyOp1 = varToReg(op1);
 		String tinyOp2 = varToReg(op2);
 		String tinyDest = varToReg(dest);
 		switch(opname){
+			case("var"):
+				TinyNode new1 = new TinyNode("var", tinyDest, null);
+				newList.addLast(new1);
 			case("ADDI"):
 				TinyNode new1 = new TinyNode("move", tinyOp1, tinyOp2);
 				TinyNode new2 = new TinyNode("addi", tinyOp2, tinyDest);
@@ -88,7 +95,7 @@ class ACNode{
 				TinyNode new1 = new TinyNode("sys writef", tinyDest, null);
 				newList.addLast(new1);
 			default:
-				System.out.printf("Not a valid IR");
+				System.out.println("Not a valid IR");
 				return null;
 		}		
 		return newList;
@@ -103,12 +110,25 @@ class ACNode{
 		}
 		else{return var;}
 	}
-		
-		
+	
+	public void print(){
+		String output;
+		if(op2 == null){output = ";" + opname + " " + op1 + " " + dest;}
+		else{output = ";" + opname + " " + op1 + " " + op2 + " "  + dest;}
+		System.out.println(output);
+		}
+	}
 }
 
 class TinyList extends LinkedList{
 	public TinyList(){}
+	
+	public void print{
+		System.out.println(";IR code");
+		ListIterator<TinyNode> li = this.listIterator();
+		while(li.hasNext())
+			li.next().print();
+	}
 }
 
 class TinyNode{
@@ -120,5 +140,12 @@ class TinyNode{
 		this.opname = opname;
 		this.op1 = op1;
 		this.op2 = op2;
+	}
+	
+	public void print(){
+		String output;
+		if(op2 == null){output = opname + " " + op1 + " " + op2;}
+		else{output = opname + " " + op1 + " " + op2;}
+		System.out.println(output);
 	}
 }
