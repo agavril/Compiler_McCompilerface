@@ -31,6 +31,8 @@ class ACNode{
 	}
     
     public TinyList ACToTiny(){		//Converts an ACNode to a list of TinyNodes
+	System.out.println("ACToTinyCall");
+	System.out.println(opname);
 	TinyList newList = new TinyList();
 	String tinyOp1 = varToReg(op1);
 	String tinyOp2 = varToReg(op2);
@@ -85,7 +87,7 @@ class ACNode{
 	if(var == null){return null;}
 	String result;
 	if(var.startsWith("!")){
-	    result = "r" + (Integer.parseInt(var.substring(1,var.length()-1))-1);   //Find the number and subtract 1
+	    result = "r" + var.substring(2,var.length());
 	    return result;
 	}
 	else{return var;}
@@ -93,7 +95,8 @@ class ACNode{
     
     public void print(){
 	String output;
-	if(op2 == null){output = ";" + opname + " " + op1 + " " + dest;}
+	if(op2 == null && dest == null){output = ";" + opname + " " + op1;}
+	else if(op2 == null){output = ";" + opname + " " + op1 + " " + dest;}
 	else{output = ";" + opname + " " + op1 + " " + op2 + " "  + dest;}
 	System.out.println(output);
     }
