@@ -12,16 +12,19 @@ public class Micro {
 		ANTLRErrorStrategy err = new MicroErrorStrategy(); // set error handler
 		prsr.setErrorHandler(err);
   
-		//try { // attempt to compile
-			System.out.println("We got here");
+		try { // attempt to compile
 			prsr.program();
-			System.out.println("It programmed");
-			prsr.ac.print();
-			System.out.println("sys halt");
-			// System.out.println("Accepted");
-		//} catch (Exception e) {
-			//System.out.println("Something went wrong");
-		//}
+		} catch (Exception e) {
+			System.out.println("Something went wrong");
+		}
+		prsr.ac.print();
+		/*TinyList newTinyList = new TinyList();
+		ListIterator<ACNode> liAC = prsr.ac.listIterator();
+		while(liAC.hasNext()){
+			newTinyList.addAll(liAC.next().ACToTiny());
+			newTinyList.print();
+			System.out.println("---------------");
+		} */
 	}
 }
 
@@ -87,10 +90,9 @@ class Table{
 	}
 
 	public Symbol find(String name) {
-		Symbol bol;
 		for (Symbol sym : symbol_list) {
 			if (name.equals(sym.id)) {
-				bol = sym;
+				return(sym);
 			}
 		}
 		if (root == null) {
@@ -339,6 +341,7 @@ class AbstractSyntaxTree{
 	
 	public AbstractSyntaxTree(Symbol ps, int ASTreg, Table table) {
 		this.ps = ps;
+		//System.out.println((ps == null));
 		operators = new Stack<ASTNode>();
 		expressions = new Stack<ASTNode>();
 		ac = new ACList();
@@ -354,15 +357,13 @@ class AbstractSyntaxTree{
 	}
 	
 	public void addOperand(String op) {
-		System.out.println("Entered addOperand");
 		ASTNode n = new ASTNode(op);
 		expressions.push(n);
-		System.out.println("exiting addOperand");
 	}
 
 	public void addOperator(String op) {
 		if (!operators.isEmpty()) {
-			while ((getPemdas(op) <= getPemdas(operators.peek().val)) && (!operators.isEmpty())) {
+			while ((!operators.isEmpty()) && (getPemdas(op) <= getPemdas(operators.peek().val))) {
 				restack();
 			}
 		}
@@ -389,7 +390,7 @@ class AbstractSyntaxTree{
 		operators.pop();
 	}
 
-	public void program_end() {
+	public void expr_end() {
 		while(!operators.isEmpty()){
 			restack();
 		}
@@ -465,3 +466,4 @@ class AbstractSyntaxTree{
 		}
 	}
 }
+
