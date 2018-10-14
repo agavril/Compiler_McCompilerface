@@ -8,7 +8,7 @@ grammar Micro;
 	public AbstractSyntaxTree ast;
 	public int ASTregs = 0;
 }
-program           : 'PROGRAM' id 'BEGIN' pgm_body 'END' ; 
+program           : 'PROGRAM' id 'BEGIN' pgm_body 'END' {tree.print();}; 
 id                : IDENTIFIER;
 pgm_body          : decl func_declarations;
 decl		        : string_decl decl | var_decl decl | ;
@@ -59,9 +59,9 @@ base_stmt 	  : assign_stmt | read_stmt | write_stmt | control_stmt;
 // Basic Statements
 assign_stmt       : assign_expr ';';
 assign_expr       : id {
-  ast = new AbstractSyntaxTree(tree.scope.find($id.text), ASTregs, tree.scope);
-}':=' expr {
-  ast.program_end();
+  ast = new AbstractSyntaxTree(tree.scope.find($id.text), ASTregs, tree.scope);}
+  ':=' expr {
+  ast.expr_end();
   ac.addAll(ast.ac);
   ASTregs = ast.tmp_cnt; // add AST & set new ASTregs
 };
@@ -193,3 +193,4 @@ KEYWORD : 	'PROGRAM'
 			| 'BREAK';
 			
 IDENTIFIER : [a-zA-Z]([a-zA-Z]|[0-9])*;
+
