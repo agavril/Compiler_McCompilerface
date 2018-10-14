@@ -32,7 +32,6 @@ class ACNode{
 	}
     
     public TinyList ACToTiny(){		//Converts an ACNode to a list of TinyNodes
-	System.out.println("ACToTinyCall" + opname);
 	TinyList newList = new TinyList();
 	String tinyOp1 = varToReg(op1);
 	String tinyOp2 = varToReg(op2);
@@ -40,45 +39,61 @@ class ACNode{
 	switch(opname){
 	case("var"):
 	    newList.addLast(new TinyNode("var", tinyDest, null));
+	    break;
 	case("ADDI"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("addi", tinyOp2, tinyDest));
+	    break;
 	case("SUBI"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("subi", tinyOp2, tinyDest));
+	    break;
 	case("MULI"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("muli", tinyOp2, tinyDest));
+	    break;
 	case("DIVI"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("divi", tinyOp2, tinyDest));
+	    break;
 	case("ADDF"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("addr", tinyOp2, tinyDest));
+	    break;
 	case("SUBF"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("subr", tinyOp2, tinyDest));
+	    break;
 	case("MULF"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("mulr", tinyOp2, tinyDest));
+	    break;
 	case("DIVF"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
 	    newList.addLast(new TinyNode("divr", tinyOp2, tinyDest));
+	    break;
 	case("STOREI"): case("STOREF"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
+	    break;
 	case("READI"):
 	    newList.addLast(new TinyNode("sys readi", tinyDest, null));
+	    break;
 	case("READF"):
 	    newList.addLast(new TinyNode("sys readr", tinyDest, null));
+	    break;
 	case("WRITEI"):
 	    newList.addLast(new TinyNode("sys writei", tinyDest, null));
+	    break;
 	case("WRITEF"):
 	    newList.addLast(new TinyNode("sys writer", tinyDest, null));
+	    break;
 	case("WRITES"):
 	    newList.addLast(new TinyNode("sys writef", tinyDest, null));
+	    break;
 	default:
-	    //System.out.println("Not a valid IR");
-	    //newList = null;
+	    System.out.println("Not a valid IR");
+	    newList = null;
+	    break;
 	}		
 	return newList;
     }
