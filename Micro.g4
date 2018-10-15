@@ -4,6 +4,9 @@ grammar Micro;
 @members {
 	public Tree tree = new Tree();
 	public int level = 0;
+	public ACList ac = new ACList();
+	public AbstractSyntaxTree ast;
+	public int ASTregs = 0;
 }
 program           : 'PROGRAM' id 'BEGIN' pgm_body 'END' {tree.print();}; 
 id                : IDENTIFIER;
@@ -23,6 +26,7 @@ var_decl          : var_type id_list ';'{
 	String[] strings = $id_list.text.split(",");
 	for (String id : strings){
 		Symbol newSymbol = new Symbol(id, $var_type.text, "0");
+		ac.addLast(new ACNode("var", null, null, id));
 		tree.scope.add(newSymbol);
 	}
 };
@@ -54,9 +58,46 @@ base_stmt 	  : assign_stmt | read_stmt | write_stmt | control_stmt;
 
 // Basic Statements
 assign_stmt       : assign_expr ';';
-assign_expr       : id ':=' expr;
-read_stmt         : 'READ' '(' id_list ')' ';';
-write_stmt        : 'WRITE' '(' id_list ')' ';';
+assign_expr       : id {
+  ast = new AbstractSyntaxTree(tree.scope.find($id.text), ASTregs, tree.scope);}
+  ':=' expr {
+  ast.expr_end();
+  ac.addAll(ast.ac);
+  ASTregs = ast.tmp_cnt; // add AST & set new ASTregs
+};
+read_stmt         : 'READ' '(' id_list ')' ';'{
+  String[] idlist = $id_list.text.split(",");
+  String op = null;
+  for (String id : idlist) {
+    Symbol sym = tree.scope.find(id);
+    if (sym.type.equals("INT")) {
+      op = "READI";
+    }
+    else if (sym.type.equals("FLOAT")) {
+      op = "READF";
+    }
+    ACNode acnode = new ACNode(op, null, null, id);
+    ac.addLast(acnode);
+  }
+};
+write_stmt        : 'WRITE' '(' id_list ')' ';'{
+  String[] idlist = $id_list.text.split(",");
+  String op = null;
+  for (String id : idlist) {
+    Symbol sym = tree.scope.find(id);
+    if (sym.type.equals("INT")) {
+      op = "WRITEI";
+    }
+    else if (sym.type.equals("FLOAT")) {
+      op = "WRITEF";
+    }
+    else if (sym.type.equals("STRING")) {
+      op = "WRITES";
+    }
+    ACNode acnode = new ACNode(op, null, null, id);
+    ac.addLast(acnode);
+  }
+};
 return_stmt       : 'RETURN' expr ';';
 
 // Expressions
@@ -68,9 +109,14 @@ postfix_expr      : primary | call_expr;
 call_expr         : id '(' expr_list ')';
 expr_list         : expr expr_list_tail | ;
 expr_list_tail    : ',' expr expr_list_tail | ;
-primary           : '(' expr ')' | id | INTLITERAL | FLOATLITERAL;
-addop             : '+' | '-';
-mulop             : '*' | '/';
+primary           : '('          {ast.par_start();}
+	            expr ')'     {ast.par_end();}|
+	            id           {ast.addOperand($id.text);}|
+		    INTLITERAL   {ast.addOperand($INTLITERAL.text);}|
+		    FLOATLITERAL {ast.addOperand($FLOATLITERAL.text);};
+
+addop             : '+' {ast.addOperator("+");} | '-' {ast.addOperator("-");};
+mulop             : '*' {ast.addOperator("*");} | '/' {ast.addOperator("/");};
 
 // Complex Statements and Condition
 if_stmt           : 'IF'
@@ -147,3 +193,4 @@ KEYWORD : 	'PROGRAM'
 			| 'BREAK';
 			
 IDENTIFIER : [a-zA-Z]([a-zA-Z]|[0-9])*;
+
