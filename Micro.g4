@@ -8,7 +8,7 @@ grammar Micro;
 	public AbstractSyntaxTree ast;
 	public int ASTregs = 0;
 }
-program           : 'PROGRAM' id 'BEGIN' pgm_body 'END' {tree.print();}; 
+program           : 'PROGRAM' id 'BEGIN' pgm_body 'END'; 
 id                : IDENTIFIER;
 pgm_body          : decl func_declarations;
 decl		        : string_decl decl | var_decl decl | ;
