@@ -206,40 +206,41 @@ class ACNode{
 	String tinyOp1 = varToReg(op1);
 	String tinyOp2 = varToReg(op2);
 	String tinyDest = varToReg(dest);
+	//System.out.println(op1 + " " + tinyOp1 + " | " + op2 + " " + tinyOp2 + " | " + dest + " " + tinyDest);
 	switch(opname){
 	case("var"):
 	    newList.addLast(new TinyNode("var", tinyDest, null));
 	    break;
 	case("ADDI"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("addi", tinyOp2, tinyDest));
 	    break;
 	case("SUBI"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("subi", tinyOp2, tinyDest));
 	    break;
 	case("MULI"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("muli", tinyOp2, tinyDest));
 	    break;
 	case("DIVI"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("divi", tinyOp2, tinyDest));
 	    break;
 	case("ADDF"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("addr", tinyOp2, tinyDest));
 	    break;
 	case("SUBF"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("subr", tinyOp2, tinyDest));
 	    break;
 	case("MULF"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("mulr", tinyOp2, tinyDest));
 	    break;
 	case("DIVF"):
-	    newList.addLast(new TinyNode("move", tinyOp1, tinyOp2));
+	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("divr", tinyOp2, tinyDest));
 	    break;
 	case("STOREI"): case("STOREF"):
@@ -354,17 +355,16 @@ class ASTNode {
 		this.right = null;
 	}
 
-	/*public void print() {
-		if (left != null) {
-			System.out.print("[");
-			left.print();
-		}
-		System.out.print(val+" ");
-		if (right != null) {
-			right.print();
-			System.out.print("]");
-		}
-	}*/
+	public void print() {
+	    String s = val;
+	    if (left != null) {
+		s = s + " " + left.val;
+	    }
+	    if (right != null) {
+		s = s + " " + right.val;
+	    }
+	    System.out.println(s);
+	}
 }
 
 class AbstractSyntaxTree{
@@ -453,17 +453,16 @@ class AbstractSyntaxTree{
 		}
 		return retval;
 	}
-
+ 
 	public void post_traversal (ASTNode n) {
 		ACNode acnode;
-      
 		if (n.left != null) {
 			post_traversal(n.left);
 		}
 		if (n.right != null) {
 			post_traversal(n.right);
 		}
-		
+
 		if (n.val.equals("+")) {
 			tmp_cnt = tmp_cnt + 1;
 			acnode = new ACNode("ADD"+type, n.left.val, n.right.val, "!T" + tmp_cnt);
@@ -482,7 +481,7 @@ class AbstractSyntaxTree{
 		}
 		else {
 			if (table.find(n.val) != null) {
-				if (table.find_register(n.val) != 1) {
+				if (table.find_register(n.val) == 1) {
 					acnode = null;
 				}
 				else {
