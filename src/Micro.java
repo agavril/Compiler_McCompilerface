@@ -182,6 +182,8 @@ class ACList extends LinkedList{
     
     public void print(){    //Go through every node and run its print
 	System.out.println(";IRCode");
+	System.out.println(";LABEL FUNC_main");
+	System.out.println(";LINK");
       	ListIterator<ACNode> li = this.listIterator();
 	while(li.hasNext()){
 	    li.next().print();
@@ -259,7 +261,7 @@ class ACNode{
 	    newList.addLast(new TinyNode("sys writer", tinyDest, null));
 	    break;
 	case("WRITES"):
-	    newList.addLast(new TinyNode("sys writef", tinyDest, null));
+	    newList.addLast(new TinyNode("sys writes", tinyDest, null));
 	    break;
 	default:
 	    System.out.println("Not a valid IR");
@@ -281,6 +283,8 @@ class ACNode{
     
     public void print(){
 	String output;
+	if(opname.equals("var")){return;};
+	
 	if(op2 == null && dest == null){
 		output = ";" + opname + " " + op1;
 	}
