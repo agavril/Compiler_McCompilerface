@@ -213,6 +213,9 @@ class ACNode{
 	case("var"):
 	    newList.addLast(new TinyNode("var", tinyDest, null));
 	    break;
+	case("str"):
+	    newList.addLast(new TinyNode("str", tinyDest, tinyOp1));
+	    break;
 	case("ADDI"):
 	    newList.addLast(new TinyNode("move", tinyOp1, tinyDest));
 	    newList.addLast(new TinyNode("addi", tinyOp2, tinyDest));
@@ -283,7 +286,7 @@ class ACNode{
     
     public void print(){
 	String output;
-	if(opname.equals("var")){return;};
+	if(opname.equals("var") | opname.equals("str")){return;};
 	
 	if(op2 == null && dest == null){
 		output = ";" + opname + " " + op1;

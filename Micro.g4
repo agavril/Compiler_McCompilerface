@@ -6,7 +6,7 @@ grammar Micro;
 	public int level = 0;
 	public ACList ac = new ACList();
 	public AbstractSyntaxTree ast;
-	public int ASTregs = 0;
+	public int ASTregs = -1;
 }
 program           : 'PROGRAM' id 'BEGIN' pgm_body 'END'; 
 id                : IDENTIFIER;
@@ -18,6 +18,7 @@ decl		        : string_decl decl | var_decl decl | ;
 string_decl       : 'STRING' id ':=' str ';'{
 	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text);
 	tree.scope.add(newSymbol);
+	ac.addLast(new ACNode("str", $str.text, null, $id.text));
 };
 str               : STRINGLITERAL;
 
