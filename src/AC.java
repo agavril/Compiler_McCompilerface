@@ -159,6 +159,12 @@ class ACNode{
 	    case("WRITES"):
 		newList.addLast(new TinyNode("sys writes", tinyDest, null));
 		break;
+	    case("JUMP"):
+		newList.addLast(new TinyNode("jmp", tinyDest, null));
+		break;
+	    case("LABEL"):
+		newList.addLast(new TinyNode("label", tinyDest, null));
+		break;
 	    default:
 		System.out.println("Not a valid IR");
 		newList = null;
