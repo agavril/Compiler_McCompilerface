@@ -7,6 +7,10 @@ grammar Micro;
 	public ACList ac = new ACList();
 	public AbstractSyntaxTree ast;
 	public int ASTregs = -1;
+	public ACNode global_node; // for transferring between scopes(in java not in our compiler)
+	public int blockLoc;
+	public java.util.Stack<Integer> block_stack = new java.util.Stack<Integer>();
+	public java.util.Stack<Integer> prev_block = new java.util.Stack<Integer>();
 }
 program           : 'PROGRAM' id 'BEGIN' pgm_body 'END'; 
 id                : IDENTIFIER;
@@ -120,20 +124,140 @@ addop             : '+' {ast.addOperator("+");} | '-' {ast.addOperator("-");};
 mulop             : '*' {ast.addOperator("*");} | '/' {ast.addOperator("/");};
 
 // Complex Statements and Condition
-if_stmt           : 'IF'
-{tree.down("BLOCK", ++level);} 
-'(' cond ')' decl stmt_list else_part 'ENDIF'
-{tree.up();};
+if_stmt           : 'IF' 
+{
+  tree.down("BLOCK", ++level);
+  block_stack.push(new Integer(2*tree.scope.level+1));
+  
+} 
+'(' cond ')' 
+{
+  ac.addLast(global_node); 
+  blockLoc = ac.size() - 1;
+  prev_block.push(new Integer(blockLoc));
+}
+decl stmt_list 
+{
+  ac.addLast(new ACNode("JUMP", null, null, "label" + block_stack.peek().toString()));
+}
+else_part 'ENDIF' 
+{
+  ac.addLast(new ACNode("LABEL", null, null, "label" + block_stack.pop().toString()));
+  prev_block.pop();
+  tree.up();
+};
+
 else_part         : 'ELSE' 
-{tree.down("BLOCK", ++level);} 
+{
+  tree.down("BLOCK", ++level);
+  ac.swap(prev_block.pop().intValue(), "label" + (2*tree.scope.level));
+  ac.addLast(new ACNode("LABEL", null, null, "label" + (2*tree.scope.level)));
+} 
 decl stmt_list
-{tree.up();} | ;
-cond              : expr compop expr | 'TRUE' | 'FALSE';
-compop            : '<' | '>' | '=' | '!=' | '<=' | '>=';
+{
+  ac.addLast(new ACNode("JUMP", null, null, "label" + block_stack.peek().toString()));
+  tree.up();
+} | ;
+
+
+cond              :
+{
+  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
+} 
+expr 
+{
+  global_node = new ACNode(null, null, null, null);
+  if (!$expr.text.isEmpty()) {
+    if ($expr.text.contains(".")) {
+      ast.type = "F";
+    }
+    else {
+      for (String s : $expr.text.split(" ")) {
+	if (ast.table.find(s) != null) {
+	  ast.type = ast.table.find(s).type.substring(0,1);
+	  break;
+	}
+	else {
+	  ast.type = "I";
+	}
+      }
+    }
+  }
+  ac.addAll(ast.ac);
+  ASTregs = ast.tmp_cnt;
+  global_node.op1 = ast.root.val;
+}
+compop 
+{
+  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
+}
+expr 
+{
+  if (!$expr.text.isEmpty()) {
+    if ($expr.text.contains(".")) {
+      ast.type = "F";
+    }
+    else {
+      for (String s : $expr.text.split(" ")) {
+	if (ast.table.find(s) != null) {
+	  ast.type = ast.table.find(s).type.substring(0,1);
+	  break;
+	}
+	else {
+	  ast.type = "I";
+	}
+      }
+    }
+  }
+  ac.addAll(ast.ac);
+  ASTregs = ast.tmp_cnt;
+  global_node.op2 = ast.root.val;
+  global_node.dest = "label" + block_stack.peek().toString();
+}
+| 'TRUE' 
+{
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "0", null, "!T" + ASTregs));
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
+}
+| 'FALSE'
+{
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
+};
+
+
+compop :	'<' {global_node.opname = "LT";}|
+		'>' {global_node.opname = "GT";}| 
+		'=' {global_node.opname = "EQ";}|
+		'!='{global_node.opname = "NE";}|
+		'<='{global_node.opname = "LE";}|
+		'>='{global_node.opname = "GE";}
+;
+
 while_stmt        : 'WHILE' 
-{tree.down("BLOCK", ++level);} 
-'(' cond ')' decl stmt_list 'ENDWHILE'
-{tree.up();};
+{
+  tree.down("BLOCK", ++level);
+  ac.addLast(new ACNode("LABEL", null, null, "WHILE_START_" + (2*tree.scope.level)));
+  block_stack.push(new Integer(2*tree.scope.level+1));
+} 
+'(' cond ')' 
+{
+  ac.addLast(global_node);
+  blockLoc = ac.size()-1;
+  prev_block.push(new Integer(blockLoc));
+}
+decl stmt_list 'ENDWHILE'
+{
+  ac.addLast(new ACNode("JUMP", null, null, "label" + 2*tree.scope.level));
+  ac.addLast(new ACNode("LABEL", null, null, "label" + block_stack.pop().toString()));
+  tree.up();
+};
 
 
 // ECE468 ONLY
@@ -194,4 +318,3 @@ KEYWORD : 	'PROGRAM'
 			| 'BREAK';
 			
 IDENTIFIER : [a-zA-Z]([a-zA-Z]|[0-9])*;
-
