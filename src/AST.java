@@ -3,7 +3,6 @@ import org.antlr.v4.runtime.tree.*;
 import java.io.IOException;
 import java.util.*;
 
-public class AST {}
 
 class ASTNode {
 	String val;
@@ -60,6 +59,17 @@ class AbstractSyntaxTree{
 		}
 		this.table = table;
 	}
+
+	public AbstractSyntaxTree(int ASTreg, Table table) {
+		this.ps = null;
+		//System.out.println((ps == null));
+		operators = new Stack<ASTNode>();
+		expressions = new Stack<ASTNode>();
+		ac = new ACList();
+		root = null;
+		tmp_cnt = ASTreg;
+		this.table = table;
+	}
 	
 	public void addOperand(String op) {
 		ASTNode n = new ASTNode(op);
@@ -103,8 +113,25 @@ class AbstractSyntaxTree{
 			root = expressions.pop();
 		}
 		post_traversal(root);
-		ac.addLast(new ACNode("STORE"+type, root.val, null, ps.id));
-		table.add_register(ps.id, tmp_cnt);
+
+		if (ps == null) {
+			// perform conditional expression and store value for comparison
+			if ((table.find(root.val) == null) && !root.val.contains("!T")) { // check to see if symbol already exists
+				tmp_cnt = tmp_cnt + 1;
+				ac.addLast(new ACNode("STORE"+type, root.val, null, "!T" + tmp_cnt));
+			}
+		}
+		else if (table.find(root.val) != null) {
+			tmp_cnt = tmp_cnt + 1;
+			ac.addLast(new ACNode("STORE"+type, root.val, null, "!T" + tmp_cnt));
+			table.add_register(root.val, tmp_cnt);
+			ac.addLast(new ACNode("STORE"+type, "!T" + tmp_cnt, null, ps.id));
+
+		} 
+		else {
+			ac.addLast(new ACNode("STORE"+type, root.val, null, ps.id));
+			table.add_register(ps.id, tmp_cnt);
+		}
 	}
 
 	public int getPemdas(String op) {
