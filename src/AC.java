@@ -17,6 +17,12 @@ class ACList extends LinkedList{
 	    li.next().print();
 	}
     }
+    
+    public void swap(int i, String op) {
+	ACNode n = (ACNode) super.remove(i);
+	n.dest = op;
+	add(i, n);
+    }
 }
 
 class ACNode{
