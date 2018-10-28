@@ -161,84 +161,81 @@ decl stmt_list
 
 
 cond              :
-{
-  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
-} 
-expr 
-{
-  global_node = new ACNode(null, null, null, null);
-  if (!$expr.text.isEmpty()) {
-    if ($expr.text.contains(".")) {
-      ast.type = "F";
+    {
+        ast = new AbstractSyntaxTree(ASTregs, tree.scope);
+    }   
+    expr {
+        global_node = new ACNode(null, null, null, null);
+        if (!$expr.text.isEmpty()) {
+            if ($expr.text.contains(".")) {
+                ast.type = "F";
+            }
+            else {
+                for (String s : $expr.text.split(" ")) {
+	                if (ast.table.find(s) != null) {
+    	                ast.type = ast.table.find(s).type.substring(0,1);
+	                    break;
+	                }
+	                else {
+	                    ast.type = "I";
+	                }
+                }
+            }
+        }
+        ast.expr_end();
+        ac.addAll(ast.ac);
+        ASTregs = ast.tmp_cnt;
+        global_node.op1 = ast.root.val;
     }
-    else {
-      for (String s : $expr.text.split(" ")) {
-	if (ast.table.find(s) != null) {
-	  ast.type = ast.table.find(s).type.substring(0,1);
-	  break;
-	}
-	else {
-	  ast.type = "I";
-	}
-      }
+    compop {
+        ast = new AbstractSyntaxTree(ASTregs, tree.scope);
     }
-  }
-  ac.addAll(ast.ac);
-  ASTregs = ast.tmp_cnt;
-  global_node.op1 = ast.root.val;
-}
-compop 
-{
-  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
-}
-expr 
-{
-  if (!$expr.text.isEmpty()) {
-    if ($expr.text.contains(".")) {
-      ast.type = "F";
+    expr {
+        if (!$expr.text.isEmpty()) {
+            if ($expr.text.contains(".")) {
+                ast.type = "F";
+            }
+            else {
+                for (String s : $expr.text.split(" ")) {
+	                if (ast.table.find(s) != null) {
+	                    ast.type = ast.table.find(s).type.substring(0,1);
+	                    break;
+	                }
+	                else {
+	                    ast.type = "I";
+	                }
+                }
+            }
+        }
+        ast.expr_end();
+        ac.addAll(ast.ac);
+        ASTregs = ast.tmp_cnt;
+        global_node.op2 = ast.root.val;
+        global_node.dest = "label" + block_stack.peek().toString();
     }
-    else {
-      for (String s : $expr.text.split(" ")) {
-	if (ast.table.find(s) != null) {
-	  ast.type = ast.table.find(s).type.substring(0,1);
-	  break;
-	}
-	else {
-	  ast.type = "I";
-	}
-      }
+    | 'TRUE' {
+        ASTregs = ASTregs + 1;
+        ac.addLast(new ACNode("STOREI", "0", null, "!T" + ASTregs));
+        ASTregs = ASTregs + 1;
+        ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+        global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
     }
-  }
-  ac.addAll(ast.ac);
-  ASTregs = ast.tmp_cnt;
-  global_node.op2 = ast.root.val;
-  global_node.dest = "label" + block_stack.peek().toString();
-}
-| 'TRUE' 
-{
-  ASTregs = ASTregs + 1;
-  ac.addLast(new ACNode("STOREI", "0", null, "!T" + ASTregs));
-  ASTregs = ASTregs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
-  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
-}
-| 'FALSE'
-{
-  ASTregs = ASTregs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
-  ASTregs = ASTregs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
-  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
-};
+    | 'FALSE' {
+        ASTregs = ASTregs + 1;
+        ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+        ASTregs = ASTregs + 1;
+        ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+        global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
+    };
 
 
-compop :	'<' {global_node.opname = "LT";}|
-		'>' {global_node.opname = "GT";}| 
-		'=' {global_node.opname = "EQ";}|
-		'!='{global_node.opname = "NE";}|
-		'<='{global_node.opname = "LE";}|
-		'>='{global_node.opname = "GE";}
-;
+compop :	'<' {global_node.opname = "LT" + ast.type;}|
+		    '>' {global_node.opname = "GT" + ast.type;}| 
+		    '=' {global_node.opname = "EQ" + ast.type;}|
+		    '!='{global_node.opname = "NE" + ast.type;}|
+		    '<='{global_node.opname = "LE" + ast.type;}|
+		    '>='{global_node.opname = "GE" + ast.type;}
+       ;
 
 while_stmt        : 'WHILE' 
 {

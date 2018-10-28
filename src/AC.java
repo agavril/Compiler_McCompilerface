@@ -172,6 +172,7 @@ class ACNode{
 		newList.addLast(new TinyNode("label", tinyDest, null));
 		break;
 	    default:
+		System.out.print(opname);
 		System.out.println("Not a valid IR");
 		newList = null;
 		break;
