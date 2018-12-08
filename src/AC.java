@@ -23,6 +23,43 @@ class ACList extends LinkedList{
 	n.dest = op;
 	add(i, n);
     }
+
+    public ACList closeMain(){
+	ACList newList = new ACList();
+	newList.addLast(new ACNode("Push", null, null, null));
+	newList.addAll(pushRegisters());
+	newList.addLast(new ACNode("JSR", null, null, "main"));
+	newList.addLast(new ACNode("HALT", null, null, "sys halt"));
+	return newList;
+    }
+
+    public ACList openFunction(String func){
+	ACList newList = new ACList();
+	newList.addAll(pushRegisters());
+	newList.addLast(new ACNode("JSR", null, null, func));
+	newList.addAll(popRegisters());
+	return newList;
+    }
+
+    public ACList pushRegisters(){
+	ACList newList = new ACList();
+	for(int i = 0; i < 4; i++){
+	    newList.addLast(new ACNode("PUSH", "r"+i, null, null));
+	}
+	return newList;
+    }
+    public ACList popRegisters(){
+	ACList newList = new ACList();
+	for(int i = 0; i < 4; i++){
+	    newList.addFirst(new ACNode("POP", "r"+i, null, null));
+	}
+	return newList;
+    }
+
+
+    public ACNode last() {
+	return (ACNode) super.getLast();
+    }
 }
 
 class ACNode{
@@ -31,11 +68,43 @@ class ACNode{
     public String op2;
     public String dest;	
     public ACNode(String opname, String op1, String op2, String dest){
-	    this.opname = opname;
-		this.op1 = op1;
-		this.op2 = op2;
-		this.dest = dest;
+	this.opname = opname;
+	this.op1 = op1;
+	this.op2 = op2;
+	this.dest = dest;
+    }
+    
+    public String varToReg(String var){      //Convert the variable number to a register number
+	if(var == null){return null;}
+	String result;
+	if(var.startsWith("!")){
+	    result = "r" + var.substring(2,var.length());
+	    return result;
 	}
+	else{return var;}
+    }
+    
+    public void print(){
+	String output;
+	if(opname.equals("var") | opname.equals("str")){return;};
+	
+	if(op2 == null && dest == null){
+		output = ";" + opname + " " + op1;
+	}
+	else if(op1 == null && dest == null) {
+		output = ";" + opname + " " + op2;
+	}
+	else if(op1 == null && op2 == null && dest != null) {
+		output = ";" + opname + " " + dest;
+	}
+	else if(op2 == null){
+		output = ";" + opname + " " + op1 + " " + dest;
+	}
+	else{
+		output = ";" + opname + " " + op1 + " " + op2 + " "  + dest;
+	}
+	System.out.println(output);
+    }
     
     public TinyList ACToTiny(){		//Converts an ACNode to a list of TinyNodes
 	TinyList newList = new TinyList();
@@ -171,6 +240,24 @@ class ACNode{
 	    case("LABEL"):
 		newList.addLast(new TinyNode("label", tinyDest, null));
 		break;
+	    case("PUSH"):
+		newList.addLast(new TinyNode("push", tinyOp1, null));
+		break;
+	    case("POP"):
+		newList.addLast(new TinyNode("pop", tinyOp1, null));
+		break;
+	    case("LINK"):
+		newList.addLast(new TinyNode("link", tinyDest, null));
+		break;
+	    case("UNLINK"):
+		newList.addLast(new TinyNode("unlnk", tinyDest, null));
+		break;
+	    case("JSR"):
+		newList.addLast(new TinyNode("jsr", tinyDest, null));
+		break;
+	    case("HALT"):
+		newList.addLast(new TinyNode("sys halt", null, null));
+		break;
 	    default:
 		System.out.print(opname);
 		System.out.println("Not a valid IR");
@@ -180,36 +267,5 @@ class ACNode{
 	}		
 	return newList;
     }
-    
-    public String varToReg(String var){      //Convert the variable number to a register number
-	if(var == null){return null;}
-	String result;
-	if(var.startsWith("!")){
-	    result = "r" + var.substring(2,var.length());
-	    return result;
-	}
-	else{return var;}
-    }
-    
-    public void print(){
-	String output;
-	if(opname.equals("var") | opname.equals("str")){return;};
-	
-	if(op2 == null && dest == null){
-		output = ";" + opname + " " + op1;
-	}
-	else if(op1 == null && dest == null) {
-		output = ";" + opname + " " + op2;
-	}
-	else if(op1 == null && op2 == null && dest != null) {
-		output = ";" + opname + " " + dest;
-	}
-	else if(op2 == null){
-		output = ";" + opname + " " + op1 + " " + dest;
-	}
-	else{
-		output = ";" + opname + " " + op1 + " " + op2 + " "  + dest;
-	}
-	System.out.println(output);
-    }
+
 }
