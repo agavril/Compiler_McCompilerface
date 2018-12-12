@@ -55,6 +55,11 @@ class ACList extends LinkedList{
 	}
 	return newList;
     }
+
+
+    public ACNode last() {
+	return (ACNode) super.getLast();
+    }
 }
 
 class ACNode{
@@ -263,7 +268,4 @@ class ACNode{
 	return newList;
     }
 
-    public ACNode last() {
-	return (ACNode) super.getLast();
-    }
 }

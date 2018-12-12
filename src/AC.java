@@ -26,7 +26,7 @@ class ACList extends LinkedList{
 
     public ACList closeMain(){
 	ACList newList = new ACList();
-	newList.addLast(new ACNode("Push", null, null, null));
+	newList.addLast(new ACNode("PUSH", null, null, null));
 	newList.addAll(pushRegisters());
 	newList.addLast(new ACNode("JSR", null, null, "main"));
 	newList.addLast(new ACNode("HALT", null, null, "sys halt"));
