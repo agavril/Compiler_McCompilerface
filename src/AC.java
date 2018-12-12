@@ -258,6 +258,10 @@ class ACNode{
 	    case("HALT"):
 		newList.addLast(new TinyNode("sys halt", null, null));
 		break;
+	    case("RET"):
+		newList.addLast(new TinyNode("unlnk", null, null));
+		newList.addLast(new TinyNode("ret", null, null));
+		break;
 	    default:
 		System.out.print(opname);
 		System.out.println("Not a valid IR");
