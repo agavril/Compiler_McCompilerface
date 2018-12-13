@@ -56,14 +56,6 @@ class ACList extends LinkedList{
 	return newList;
     }
 
-    public ACNode findNode(String name){
-	ListIterator<ACNode> li = this.listIterator();
-	while(li.hasNext()){
-	    if(li.next().opname == name){
-		return li.next();
-	    };
-	}
-    };
 
     public ACNode last() {
 	return (ACNode) super.getLast();
@@ -74,39 +66,13 @@ class ACNode{
     public String opname;
     public String op1;
     public String op2;
-    public String dest;
-    public HashSet<String> currGen;
-    public HashSet<String> currKill;
-    public HashSet<String> currIn;
-    public HashSet<String> currOut;
-    public ArrayList<ACNode> sucessorList;
-    public ArrayList<ACNode> predecessorList;
-    public boolean start;
-    public boolean end;
+    public String dest;	
     public ACNode(String opname, String op1, String op2, String dest){
 	this.opname = opname;
 	this.op1 = op1;
 	this.op2 = op2;
 	this.dest = dest;
-	currGen = new HashSet<String>();
-	currKill = new HashSet<String>();
-	currIn = new HashSet<String>();
-	currOut = new HashSet<String>();
-	successorList = new ArrayList<ACNode>();
-	predecessorList = new ArrayList<ACNose>();
-	this.start = false;
-	this.end = false;
     }
-
-    public void addToCurrGen(String element){
-	if(element == null){return;}
-	if("123456789".indexOf(element.charAt(0)) == -1){currGen.add(gen);}
-    };
-
-    public void addToCurrKill(String element){
-	if(element == null){return;};
-	if("123456789".indexOf(element.charAt(0)) == -1){currKill.add(gen);}
-    };
     
     public String varToReg(String var){      //Convert the variable number to a register number
 	if(var == null){return null;}
@@ -121,12 +87,15 @@ class ACNode{
     public void print(){
 	String output;
 	if(opname.equals("var") | opname.equals("str")){return;};
-	
-	if(op2 == null && dest == null){
-		output = ";" + opname + " " + op1;
+
+	if(op1 == null && op2 == null && dest == null) {
+	    output = ";" + opname;
 	}
 	else if(op1 == null && dest == null) {
-		output = ";" + opname + " " + op2;
+	    output = ";" + opname + " " + op2;
+	}
+	else if(op2 == null && dest == null){
+		output = ";" + opname + " " + op1;
 	}
 	else if(op1 == null && op2 == null && dest != null) {
 		output = ";" + opname + " " + dest;

@@ -26,7 +26,7 @@ class ACList extends LinkedList{
 
     public ACList closeMain(){
 	ACList newList = new ACList();
-	newList.addLast(new ACNode("Push", null, null, null));
+	newList.addLast(new ACNode("PUSH", null, null, null));
 	newList.addAll(pushRegisters());
 	newList.addLast(new ACNode("JSR", null, null, "main"));
 	newList.addLast(new ACNode("HALT", null, null, "sys halt"));
@@ -87,12 +87,15 @@ class ACNode{
     public void print(){
 	String output;
 	if(opname.equals("var") | opname.equals("str")){return;};
-	
-	if(op2 == null && dest == null){
-		output = ";" + opname + " " + op1;
+
+	if(op1 == null && op2 == null && dest == null) {
+	    output = ";" + opname;
 	}
 	else if(op1 == null && dest == null) {
-		output = ";" + opname + " " + op2;
+	    output = ";" + opname + " " + op2;
+	}
+	else if(op2 == null && dest == null){
+		output = ";" + opname + " " + op1;
 	}
 	else if(op1 == null && op2 == null && dest != null) {
 		output = ";" + opname + " " + dest;
@@ -257,6 +260,9 @@ class ACNode{
 		break;
 	    case("HALT"):
 		newList.addLast(new TinyNode("sys halt", null, null));
+		break;
+	    case("RET"):
+		newList.addLast(new TinyNode("ret", null, null));
 		break;
 	    default:
 		System.out.print(opname);

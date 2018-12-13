@@ -11,38 +11,19 @@ public class Micro {
 		MicroParser prsr = new MicroParser(ts); // construct parser from token stream
 		ANTLRErrorStrategy err = new MicroErrorStrategy(); // set error handler
 		prsr.setErrorHandler(err);
-
-		ArrayList<ACList> funcs = new ArrayList<ACList>();
-		HashMap<String, func> funcMap = new HashMap<String, func>();
-		
+  
 		try { // attempt to compile
 			prsr.program();
 		} catch (Exception e) {
 			System.out.println("Something went wrong");
 		}
 		prsr.ac.print();
-		
 		TinyList newTinyList = new TinyList();
 		ListIterator<ACNode> liAC = prsr.ac.listIterator();
 		while(liAC.hasNext()){
 			newTinyList.addAll(liAC.next().ACToTiny());
-		}
+		} 
 		newTinyList.print();
-
-		for(Table table : prsr.tree.root.tables){
-		    funcMap.put(table.name, table.foo);
-		}
-
-		ACList newList = new ACList();
-		for(Object node : prsr.ACList){
-		    if(node.start){
-			newList = new ACList();
-		    }
-		    newList.addLast(node);
-		    if(node.end){
-			funcs.add(newList);
-		    }
-		}
 	}
 }
 

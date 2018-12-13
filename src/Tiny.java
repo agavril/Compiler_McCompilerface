@@ -37,7 +37,8 @@ class TinyNode{
     
     public void print(){
 	String output;
-	if(op2 == null){output = opname + " " + extractNum(op1);}
+	if(op1 == null && op2 == null){output = opname;}
+	else if(op2 == null){output = opname + " " + extractNum(op1);}
 	else if (opname != null && op1 == null && op2 == null) {output = opname;}
 	else{output = opname + " " + extractNum(op1) + " " + extractNum(op2);}
 	System.out.println(output);

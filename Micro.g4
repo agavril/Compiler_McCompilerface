@@ -28,6 +28,7 @@ decl		        : string_decl{link_cnt++;} decl | var_decl decl | ;
 
 // Global String Declaration
 string_decl       : 'STRING' id ':=' str ';'{
+	link_cnt++;
 	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text);
 	tree.scope.add(newSymbol);
 	ac.addLast(new ACNode("str", $str.text, null, $id.text));
@@ -37,7 +38,6 @@ str               : STRINGLITERAL;
 // Variable Declaration
 var_decl          : var_type id_list ';'{
 	String[] strings = $id_list.text.split(",");
-	link_cnt = link_cnt + strings.length;
 	for (String id : strings){
 		Symbol newSymbol = new Symbol(id, $var_type.text, "0");
 		tree.scope.add(newSymbol);
@@ -70,7 +70,7 @@ func_decl	  : 'FUNCTION' any_type id
   tree.down($id.text, 0);
   foo = new func();
   tree.scope.set_func(foo);
-  ac.addLast(new ACNode("LABEL", null, null, $id.text));		// ACnode for the start of a function
+  ac.addLast(new ACNode("LABEL", null, null, $id.text));
 }
 '(' param_decl_list 
 {
@@ -110,63 +110,39 @@ assign_expr       : id {
 read_stmt         : 'READ' '(' id_list ')' ';'{
   String[] idlist = $id_list.text.split(",");
   String op = null;
-  ACNode acnode = null;
   for (String id : idlist) {
     Symbol sym = foo.findVar(id);
     if (sym == null) {
       sym = tree.scope.find(id);
-      if (sym.type.equals("INT")) {
-	op = "READI";
-      }
-      else if (sym.type.equals("FLOAT")) {
-	op = "READF";
-      }
-      acnode = new ACNode(op, null, null, id);
     }
-    else
-    {
-      if (sym.type.equals("INT")) {
-	op = "READI";
-      }
-      else if (sym.type.equals("FLOAT")) {
-	op = "READF";
-      }
-      acnode = new ACNode(op, null, null, sym.value);
+    if (sym.type.equals("INT")) {
+      op = "READI";
     }
+    else if (sym.type.equals("FLOAT")) {
+      op = "READF";
+    }
+    ACNode acnode = new ACNode(op, null, null, id);
     ac.addLast(acnode);
   }
 };
 write_stmt        : 'WRITE' '(' id_list ')' ';'{
   String[] idlist = $id_list.text.split(",");
   String op = null;
-  ACNode acnode = null;
   for (String id : idlist) {
     Symbol sym = foo.findVar(id);
     if (sym == null) {
       sym = tree.scope.find(id);
-      if (sym.type.equals("INT")) {
-	op = "WRITEI";
-      }
-      else if (sym.type.equals("FLOAT")) {
-	op = "WRITEF";
-      }
-      else if (sym.type.equals("STRING")) {
-	op = "WRITES";
-      }
-      acnode = new ACNode(op, null, null, id);
     }
-    else {
-      if (sym.type.equals("INT")) {
-	op = "WRITEI";
-      }
-      else if (sym.type.equals("FLOAT")) {
-	op = "WRITEF";
-      }
-      else if (sym.type.equals("STRING")) {
-	op = "WRITES";
-      }
-      acnode = new ACNode(op, null, null, sym.value);
+    if (sym.type.equals("INT")) {
+      op = "WRITEI";
     }
+    else if (sym.type.equals("FLOAT")) {
+      op = "WRITEF";
+    }
+    else if (sym.type.equals("STRING")) {
+      op = "WRITES";
+    }
+    ACNode acnode = new ACNode(op, null, null, id);
     ac.addLast(acnode);
   }
 };
@@ -195,7 +171,7 @@ expr
   ast.expr_end(2);
   ac.addAll(ast.ac);
   foo.regs = ast.tmp_cnt;
-  ac.addLast(new ACNode("STORE"+ast.type, "!T"+foo.regs, null, Integer.toString(foo.retval)));
+  ac.addLast(new ACNode("STORE"+ast.type, "!T"+foo.regs, null, "$" + Integer.toString(foo.retval)));
   ac.addLast(new ACNode("RET", null, null, null));
 }
 ';';
@@ -215,11 +191,7 @@ id '('
   ast_stack.push(ast);
   foo.regs = ast.tmp_cnt;
 }
-expr_list 
-{
-  ast = ast_stack.pop();
-}
-')' 
+expr_list ')' 
 {
   ac.addAll(ac.openFunction($id.text));
   int num_params = 0;
@@ -267,10 +239,6 @@ expr
 expr_list_tail | ;
 expr_list_tail    : ',' 
 {
-  ast = new AbstractSyntaxTree(foo.regs, tree.scope);
-}
-expr
-{
   if (!$expr.text.isEmpty()) {
     if ($expr.text.contains(".")) {
       ast.type = "F";
@@ -289,11 +257,11 @@ expr
   }
 
   ast.expr_end(1);
-  System.out.println("Line 261");
   ac.addAll(ast.ac);
   foo.regs = ast.tmp_cnt;
   ac.addLast(new ACNode("PUSH", ast.root.val, null, null));
-} expr_list_tail | ;
+}
+expr expr_list_tail | ;
 primary           : '('          {ast.par_start();}
 	            expr ')'     {ast.par_end();}|
 	            id           {ast.addOperand($id.text);}|
@@ -364,7 +332,6 @@ expr
     }
   }
   ast.expr_end(3);
-  System.out.println("Line 337");
   ac.addAll(ast.ac);
   foo.regs = ast.tmp_cnt;
   global_node.op1 = ast.root.val;
@@ -392,7 +359,6 @@ expr
     }
   }
   ast.expr_end(4);
-  System.out.println("Line 365");
   ac.addAll(ast.ac);
   ASTregs = ast.tmp_cnt;
   global_node.op2 = ast.root.val;
