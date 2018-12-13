@@ -1,8 +1,4 @@
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-import java.io.IOException;
-import java.util.*;
-
+public class AST {}
 
 class ASTNode {
 	String val;
@@ -59,17 +55,6 @@ class AbstractSyntaxTree{
 		}
 		this.table = table;
 	}
-
-	public AbstractSyntaxTree(int ASTreg, Table table) {
-		this.ps = null;
-		//System.out.println((ps == null));
-		operators = new Stack<ASTNode>();
-		expressions = new Stack<ASTNode>();
-		ac = new ACList();
-		root = null;
-		tmp_cnt = ASTreg;
-		this.table = table;
-	}
 	
 	public void addOperand(String op) {
 		ASTNode n = new ASTNode(op);
@@ -105,7 +90,7 @@ class AbstractSyntaxTree{
 		operators.pop();
 	}
 
-	public void expr_end(int fooflag) {
+	public void expr_end() {
 		while(!operators.isEmpty()){
 			restack();
 		}
@@ -113,35 +98,8 @@ class AbstractSyntaxTree{
 			root = expressions.pop();
 		}
 		post_traversal(root);
-
-		if (ps == null) {
-			// perform conditional expression and store value for comparison
-			if ((table.find(root.val) == null) && !root.val.contains("!T") && fooflag != 1) { // check to see if symbol already exists
-				if (fooflag != 3 && !root.val.contains("!")) {
-					tmp_cnt = tmp_cnt + 1;
-					ac.addLast(new ACNode("STORE"+type, root.val, null, "!T" + tmp_cnt));
-					if (fooflag == 4) {
-						root.val = "!T" + tmp_cnt;
-					}
-				}
-			}
-		}
-		else if (table.find(root.val) != null) {
-			tmp_cnt = tmp_cnt + 1;
-			ac.addLast(new ACNode("STORE"+type, root.val, null, "!T" + tmp_cnt));
-			table.add_register(root.val, tmp_cnt);
-			ac.addLast(new ACNode("STORE"+type, "!T" + tmp_cnt, null, ps.id));
-
-		} 
-		else {
-			if (table.foo.findVar(ps.id) != null) {
-				ac.addLast(new ACNode("STORE"+type, root.val, null, table.foo.findVar(ps.id).value));
-			}
-			else {
-				ac.addLast(new ACNode("STORE"+type, root.val, null, ps.id));
-				table.add_register(ps.id, tmp_cnt);
-			}
-		}
+		ac.addLast(new ACNode("STORE"+type, root.val, null, ps.id));
+		table.add_register(ps.id, tmp_cnt);
 	}
 
 	public int getPemdas(String op) {
@@ -184,18 +142,7 @@ class AbstractSyntaxTree{
 			acnode = new ACNode("DIV"+type, n.left.val, n.right.val, "!T" + tmp_cnt);
 		}
 		else {
-			if (n.val.contains("!")) {
-				acnode = null;
-			}
-			else if (table.foo.findInput(n.val) != null) {
-				n.val = table.foo.findInput(n.val).val;
-				acnode = null;
-			}
-			else if (table.foo.findVar(n.val) != null) {
-				n.val = table.foo.findVar(n.val).val;
-				acnode = null;
-			}
-			else if (table.find(n.val) != null) {
+			if (table.find(n.val) != null) {
 				if (table.find_register(n.val) == 1) {
 					acnode = null;
 				}

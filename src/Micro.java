@@ -15,15 +15,17 @@ public class Micro {
 		try { // attempt to compile
 			prsr.program();
 		} catch (Exception e) {
-			System.out.println("Something went wrong");
+		    //System.out.println("Something went wrong");
 		}
 		prsr.ac.print();
+		System.out.println(";RET");
 		TinyList newTinyList = new TinyList();
 		ListIterator<ACNode> liAC = prsr.ac.listIterator();
 		while(liAC.hasNext()){
 			newTinyList.addAll(liAC.next().ACToTiny());
 		} 
 		newTinyList.print();
+		System.out.println("sys halt");
 	}
 }
 
@@ -64,37 +66,14 @@ class Table{
 	int level; // block level
 	Table root; // for 'END' statements
 	private ArrayList<Symbol> symbol_list = new ArrayList<Symbol>();
-	public ArrayList<Table> nested = new ArrayList<Table>(); // tables for all nested blocks
+	private ArrayList<Table> nested = new ArrayList<Table>(); // tables for all nested blocks
 	private ArrayList<String> duplicates = new ArrayList<String>(); // records all duplicate declarations
 	public HashMap<Symbol, Integer> register_list = new HashMap<Symbol, Integer>();
-	public func foo;
 
 	public Table(String name, Table root, int level) { // constructor
 		this.name = name;
 		this.level = level;
 		this.root = root;
-		if (this.root != null) {
-			this.set_func(root.foo);
-		}
-		else {
-			this.foo = null;
-		}
-	}
-
-	public void set_func(func foo) {
-		this.foo = foo;
-	}
-
-	public int countParam() {
-		return foo.inputs;
-	}
-
-	public Symbol getFooParam(String name) {
-		return foo.findInput(name);
-	}
-
-	public Symbol getFooVar(String name) {
-		return foo.findVar(name);
 	}
 
 	public void add(Symbol s){ // add symbol
