@@ -9,26 +9,17 @@ grammar Micro;
 	public int ASTregs = -1;
 	public ACNode global_node; // for transferring between scopes(in java not in our compiler)
 	public int blockLoc;
-	public java.util.Stack<AbstractSyntaxTree> ast_stack = new java.util.Stack<AbstractSyntaxTree>();	
 	public java.util.Stack<Integer> block_stack = new java.util.Stack<Integer>();
 	public java.util.Stack<Integer> prev_block = new java.util.Stack<Integer>();
-	public int link_cnt = 0;
-	public java.util.Stack<AbstractSyntaxTree> prog_stack = new java.util.Stack<AbstractSyntaxTree>();
-	public func foo;
 }
 program           : 'PROGRAM' id 'BEGIN' pgm_body 'END'; 
 id                : IDENTIFIER;
-pgm_body          : decl 
-{
-  ac.addAll(ac.closeMain());
-}
-func_declarations; // add push and jsr for main
-decl		        : string_decl{link_cnt++;} decl | var_decl decl | ;
+pgm_body          : decl func_declarations;
+decl		        : string_decl decl | var_decl decl | ;
 
 
 // Global String Declaration
 string_decl       : 'STRING' id ':=' str ';'{
-	link_cnt++;
 	Symbol newSymbol = new Symbol($id.text, "STRING", $str.text);
 	tree.scope.add(newSymbol);
 	ac.addLast(new ACNode("str", $str.text, null, $id.text));
@@ -40,13 +31,8 @@ var_decl          : var_type id_list ';'{
 	String[] strings = $id_list.text.split(",");
 	for (String id : strings){
 		Symbol newSymbol = new Symbol(id, $var_type.text, "0");
+		ac.addLast(new ACNode("var", null, null, id));
 		tree.scope.add(newSymbol);
-		if (tree.scope == tree.global) {
-			ac.addLast(new ACNode("var", null, null, null));
-		}
-		else {
-			foo.addVar(newSymbol);
-		}
 	}
 };
 var_type	        : 'FLOAT' | 'INT';
@@ -59,39 +45,16 @@ param_decl_list   : param_decl param_decl_tail | ;
 param_decl        : var_type id{
 	Symbol newSymbol = new Symbol($id.text, $var_type.text, "0");
 	tree.scope.add(newSymbol);
-	foo.addParam($id.text, $var_type.text);
 };
 param_decl_tail   : ',' param_decl param_decl_tail | ;
 
 // Function Declarations
 func_declarations : func_decl func_declarations | ;
 func_decl	  : 'FUNCTION' any_type id
-{
-  tree.down($id.text, 0);
-  foo = new func();
-  tree.scope.set_func(foo);
-  ac.addLast(new ACNode("LABEL", null, null, $id.text));
-}
-'(' param_decl_list 
-{
-  foo.assign_values();
-}
-')' 'BEGIN' func_body 'END'
-{
-  if (!ac.last().opname.equals("RET")){
-    ac.addLast(new ACNode("RET", null, null, null));
-  }
-  tree.up();
-};
-func_body	  : 
-{
-  link_cnt = 0;
-}
-decl {
-	ac.addLast(new ACNode("LINK", null, null, "" + link_cnt));
-}
-
-stmt_list;
+{tree.down($id.text, 0);}
+'(' param_decl_list ')' 'BEGIN' func_body 'END'
+{tree.up();};
+func_body	  : decl stmt_list;
 
 // Statement List
 stmt_list	  : stmt stmt_list | ;
@@ -101,20 +64,17 @@ base_stmt 	  : assign_stmt | read_stmt | write_stmt | control_stmt;
 // Basic Statements
 assign_stmt       : assign_expr ';';
 assign_expr       : id {
-  ast = new AbstractSyntaxTree(tree.scope.find($id.text), foo.regs, tree.scope);}
+  ast = new AbstractSyntaxTree(tree.scope.find($id.text), ASTregs, tree.scope);}
   ':=' expr {
-  ast.expr_end(0);
+  ast.expr_end();
   ac.addAll(ast.ac);
-  foo.regs = ast.tmp_cnt; // add AST & set new ASTregs
+  ASTregs = ast.tmp_cnt; // add AST & set new ASTregs
 };
 read_stmt         : 'READ' '(' id_list ')' ';'{
   String[] idlist = $id_list.text.split(",");
   String op = null;
   for (String id : idlist) {
-    Symbol sym = foo.findVar(id);
-    if (sym == null) {
-      sym = tree.scope.find(id);
-    }
+    Symbol sym = tree.scope.find(id);
     if (sym.type.equals("INT")) {
       op = "READI";
     }
@@ -129,10 +89,7 @@ write_stmt        : 'WRITE' '(' id_list ')' ';'{
   String[] idlist = $id_list.text.split(",");
   String op = null;
   for (String id : idlist) {
-    Symbol sym = foo.findVar(id);
-    if (sym == null) {
-      sym = tree.scope.find(id);
-    }
+    Symbol sym = tree.scope.find(id);
     if (sym.type.equals("INT")) {
       op = "WRITEI";
     }
@@ -146,35 +103,7 @@ write_stmt        : 'WRITE' '(' id_list ')' ';'{
     ac.addLast(acnode);
   }
 };
-return_stmt       : 'RETURN'
-{
-  ast = new AbstractSyntaxTree(foo.regs, tree.scope);
-}
-expr 
-{
-  if (!$expr.text.isEmpty()) {
-    if ($expr.text.contains(".")) {
-      ast.type = "F";
-    }
-    else {
-      for (String s : $expr.text.split(" ")) {
-	if (ast.table.find(s) != null) {
-	  ast.type = ast.table.find(s).type.substring(0,1);
-	  break;
-	}
-	else {
-	  ast.type = "I";
-	}
-      }
-    }
-  }
-  ast.expr_end(2);
-  ac.addAll(ast.ac);
-  foo.regs = ast.tmp_cnt;
-  ac.addLast(new ACNode("STORE"+ast.type, "!T"+foo.regs, null, "$" + Integer.toString(foo.retval)));
-  ac.addLast(new ACNode("RET", null, null, null));
-}
-';';
+return_stmt       : 'RETURN' expr ';';
 
 // Expressions
 expr              : expr_prefix factor;
@@ -182,86 +111,9 @@ expr_prefix       : expr_prefix factor addop | ;
 factor            : factor_prefix postfix_expr;
 factor_prefix     : factor_prefix postfix_expr mulop | ;
 postfix_expr      : primary | call_expr;
-call_expr         : 
-{
-  ac.addLast(new ACNode("PUSH", null, null, null));
-}
-id '(' 
-{
-  ast_stack.push(ast);
-  foo.regs = ast.tmp_cnt;
-}
-expr_list ')' 
-{
-  ac.addAll(ac.openFunction($id.text));
-  int num_params = 0;
-  for (Table it : tree.global.nested){
-    if (it.name.equals($id.text)){
-      num_params = it.foo.inputs;
-      break;
-    }
-  }
-  for (short i = 0; i < num_params; i++) {
-    ac.addLast(new ACNode("POP", null, null, null));
-  }
-  ac.addLast(new ACNode("POP", "!T"+Integer.toString(++foo.regs), null, null));
-  ast.tmp_cnt = foo.regs;
-  ast.addOperand("!T"+Integer.toString(foo.regs));
-};
-expr_list         : 
-{
-  ast = new AbstractSyntaxTree(foo.regs, tree.scope);
-}
-expr 
-{
-  if (!$expr.text.isEmpty()) {
-    if ($expr.text.contains(".")) {
-      ast.type = "F";
-    }
-    else {
-      for (String s : $expr.text.split(" ")) {
-	if (ast.table.find(s) != null) {
-	  ast.type = ast.table.find(s).type.substring(0,1);
-	  break;
-	}
-	else {
-	  ast.type = "I";
-	}
-      }
-    }
-  }
-
-  ast.expr_end(1);
-  ac.addAll(ast.ac);
-  foo.regs = ast.tmp_cnt;
-  ac.addLast(new ACNode("PUSH", ast.root.val, null, null));
-}
-expr_list_tail | ;
-expr_list_tail    : ',' 
-{
-  if (!$expr.text.isEmpty()) {
-    if ($expr.text.contains(".")) {
-      ast.type = "F";
-    }
-    else {
-      for (String s : $expr.text.split(" ")) {
-	if (ast.table.find(s) != null) {
-	  ast.type = ast.table.find(s).type.substring(0,1);
-	  break;
-	}
-	else {
-	  ast.type = "I";
-	}
-      }
-    }
-  }
-
-  ast.expr_end(1);
-  ac.addAll(ast.ac);
-  foo.regs = ast.tmp_cnt;
-  ac.addLast(new ACNode("PUSH", ast.root.val, null, null));
-}
-expr expr_list_tail | ;
+call_expr         : id '(' expr_list ')';
+expr_list         : expr expr_list_tail | ;
+expr_list_tail    : ',' expr expr_list_tail | ;
 primary           : '('          {ast.par_start();}
 	            expr ')'     {ast.par_end();}|
 	            id           {ast.addOperand($id.text);}|
@@ -310,7 +162,7 @@ decl stmt_list
 
 cond              :
 {
-  ast = new AbstractSyntaxTree(foo.regs, tree.scope);
+  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
 } 
 expr 
 {
@@ -331,14 +183,14 @@ expr
       }
     }
   }
-  ast.expr_end(3);
+  ast.expr_end();
   ac.addAll(ast.ac);
-  foo.regs = ast.tmp_cnt;
+  ASTregs = ast.tmp_cnt;
   global_node.op1 = ast.root.val;
 }
 compop 
 {
-  ast = new AbstractSyntaxTree(foo.regs, tree.scope);
+  ast = new AbstractSyntaxTree(ASTregs, tree.scope);
 }
 expr 
 {
@@ -358,7 +210,7 @@ expr
       }
     }
   }
-  ast.expr_end(4);
+  ast.expr_end();
   ac.addAll(ast.ac);
   ASTregs = ast.tmp_cnt;
   global_node.op2 = ast.root.val;
@@ -366,19 +218,19 @@ expr
 }
 | 'TRUE' 
 {
-  foo.regs = foo.regs + 1;
-  ac.addLast(new ACNode("STOREI", "0", null, "!T" + foo.regs));
-  foo.regs = foo.regs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + foo.regs));
-  global_node = new ACNode("EQI", "!T" + foo.regs, "!T" + (foo.regs - 1), "label" + block_stack.peek().toString());
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "0", null, "!T" + ASTregs));
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
 }
 | 'FALSE'
 {
-  foo.regs = foo.regs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + foo.regs));
-  foo.regs = foo.regs + 1;
-  ac.addLast(new ACNode("STOREI", "1", null, "!T" + foo.regs));
-  global_node = new ACNode("EQI", "!T" + foo.regs, "!T" + (foo.regs - 1), "label" + block_stack.peek().toString());
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  ASTregs = ASTregs + 1;
+  ac.addLast(new ACNode("STOREI", "1", null, "!T" + ASTregs));
+  global_node = new ACNode("EQI", "!T" + ASTregs, "!T" + (ASTregs - 1), "label" + block_stack.peek().toString());
 };
 
 
